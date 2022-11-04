@@ -17,16 +17,16 @@ class DFA(object):
     """
     Clase para definir un automata finito determinista
     """
-    def __init__(self,estados, alfabeto, delta, inicial, finales):
-        self.estados = estados
-        self.alfabeto = alfabeto
+    def __init__(self, delta, inicial, finales):
+        self.estados = set(delta.estados)
+        self.alfabeto = set(delta.alfabeto)
         self.delta = delta
         self.inicial = inicial
-        self.finales = finales
-        assert inicial in estados
-        assert finales <= estados
+        self.finales = set(finales)
+        assert inicial in self.estados
+        assert finales <= self.estados
 
-        self.estado_actual = None
+        self.reset()
 
     def reset(self):
         self.estado_actual = self.inicial
@@ -34,8 +34,13 @@ class DFA(object):
     def delta_sombrero(self, palabra):
         for a in palabra:
             assert a in self.alfabeto
-            self.estado_actual = self.delta[(self.estado_actual,a)]
+            self.estado_actual = self.delta(self.estado_actual,a)
             assert self.estado_actual in self.estados
+    
+    def en_lenguaje(self, palabra):
+        self.reset()
+        self.delta_sombrero(palabra)
+        return self.estado_actual in self.finales
 
 f="""
 f  a  b
@@ -44,13 +49,6 @@ q1 q0 q2
 q2 q0 q1
 """
 
-#a = DFA({"q0","q1","q2"},"ab",f,"q0",{"q0","q2"})
-r=[]
-for l in f.split("\n"):
-    if l:
-        r.append(l.split())
-
-del r[0][0]
-
+a = DFA(Delta(f),"q0",{"q0","q2"})
 
     
