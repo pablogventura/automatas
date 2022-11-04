@@ -1,5 +1,17 @@
+import numpy
+
+
 class Delta(object):
-    pass
+    def __init__(self,tabla):
+        self.tabla = tabla
+        self.matriz=numpy.genfromtxt(self.tabla.splitlines(),dtype=str)
+        self.estados = list(self.matriz[1:,0])
+        self.alfabeto = list(self.matriz[0,1:])
+
+    
+    def __call__(self, estado, simbolo):
+        return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
+        
 
 class DFA(object):
     """
