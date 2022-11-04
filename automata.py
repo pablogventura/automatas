@@ -1,4 +1,5 @@
 import numpy
+from  IPython.display import Math
 
 
 class Delta(object):
@@ -11,6 +12,13 @@ class Delta(object):
     
     def __call__(self, estado, simbolo):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
+    
+    def __repr__(self):
+        result = ""
+        for q in self.estados:
+            for a in self.alfabeto:
+                pass
+
         
 
 class DFA(object):
