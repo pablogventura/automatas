@@ -12,7 +12,8 @@ class Delta(object):
     
     def __call__(self, estado, simbolo):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
-        
+    def __str__(self):
+        return "ahora si?"
     def __repr__(self):
         return "no entiendo nada"
     def _repr_svg_(self):
