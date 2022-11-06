@@ -12,15 +12,17 @@ class Delta(object):
     
     def __call__(self, estado, simbolo):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
-    def __str__(self):
-        return "ahora si?"
-    def __repr__(self):
-        return "no entiendo nada"
-    def _repr_svg_(self):
-        return r"""<svg height="100" width="100">
-  <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
-  Sorry, your browser does not support inline SVG.  
-</svg>"""
+
+    def _repr_latex_(self):
+        return r"""\begin{table}[]
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+f & f & f & f & a \\ \hline
+a & a & a & a & a \\ \hline
+a & a & a & a & a \\ \hline
+a & a & a & a & a \\ \hline
+\end{tabular}
+\end{table}"""
 
         
 
@@ -52,6 +54,12 @@ class DFA(object):
         self.reset()
         self.delta_sombrero(palabra)
         return self.estado_actual in self.finales
+
+    def _repr_svg_(self):
+        return r"""<svg height="100" width="100">
+  <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
+  Sorry, your browser does not support inline SVG.  
+</svg>"""
 
 f="""
 f  a  b
