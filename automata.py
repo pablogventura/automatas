@@ -13,8 +13,6 @@ class Delta(object):
     def __call__(self, estado, simbolo):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
     
-
-    
     def _repr_svg_(self):
         return r"""<svg height="100" width="100">
   <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
