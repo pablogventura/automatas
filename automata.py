@@ -16,6 +16,11 @@ class Delta(object):
     def _repr_latex_(self):
         result = r"\begin{array}{c|"+ "c" * len(self.alfabeto) + "}\n"
         result += f"\delta_{{{self.matriz[0,0]}}} & " + " & ".join(self.alfabeto) + r"\\\hline" + "\n"
+        for q in self.estados:
+            result += q
+            for a in self.alfabeto:
+                result += " & " + self(q,a)
+            result += r"\\" + "\n"
         result += r"\end{array}"
         return result
 #d & d & g\\\hline
