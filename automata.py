@@ -14,10 +14,13 @@ class Delta(object):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
 
     def _repr_latex_(self):
-        return r"""\begin{array}{c|cc}
-d & d & g\\\hline
-a & a & n
-\end{array}"""
+        result = r"\begin{array}{c|"+ "c" * len(self.alfabeto) + "}\n"
+        result += f"\delta_{{{self.matriz[0,0]}}} & " + " & ".join(self.alfabeto) + r"\\\hline" + "\n"
+        result += r"\end{array}"
+        return result
+#d & d & g\\\hline
+#a & a & n
+#\end{array}"""
 
         
 
