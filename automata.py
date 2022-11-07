@@ -14,10 +14,10 @@ class Delta(object):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
 
     def _repr_latex_(self):
-        return r"""\begin{eqnarray}
-\nabla \times \vec{\mathbf{B}} -\, \frac1c\, \frac{\partial\vec{\mathbf{E}}}{\partial t} & = \frac{4\pi}{c}\vec{\mathbf{j}} \\
-\nabla \cdot \vec{\mathbf{E}} & = 4 \pi \rho \\
-\end{eqnarray}"""
+        return r"""\begin{array}{c|cc}
+d & d & g\\\hline
+a & a & n
+\end{array}"""
 
         
 
