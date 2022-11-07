@@ -1,4 +1,5 @@
 import numpy
+import re
 from  IPython.display import Math
 
 
@@ -13,13 +14,20 @@ class Delta(object):
     def __call__(self, estado, simbolo):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
 
+    def _prettify_name(self, text):
+        match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
+        if match:
+            text,number = match.groups()
+            return f"{text}_{{{number}}}"
+
+
     def _repr_latex_(self):
         result = r"\begin{array}{c|"+ "c" * len(self.alfabeto) + "}\n"
         result += f"\delta_{{{self.matriz[0,0]}}} & " + " & ".join(self.alfabeto) + r"\\\hline" + "\n"
         for q in self.estados:
-            result += q
+            result += self._prettify_name(q)
             for a in self.alfabeto:
-                result += " & " + self(q,a)
+                result += " & " + self._prettify_name(self(q,a))
             result += r"\\" + "\n"
         result += r"\end{array}"
         return result
