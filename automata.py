@@ -97,28 +97,14 @@ class DFA(object):
         return self.estado_actual in self.finales
 
     def _repr_svg_(self):
-        c=r"""\node[state] (phi) {$\emptyset$};
-\node[state, accepting, right of=phi] (1) {$\{1\}$};
-\node[state, right of=1] (2) {$\{2\}$};
-\node[state, accepting, right of=2] (12) {$\{1, 2\}$};
-\node[state, below of=phi] (3) {$\{3\}$};
-\node[state, initial, initial where=above, accepting, right of=3] (13) {$\{1, 3\}$};
-\node[state, right of=13] (23) {$\{2, 3\}$};
-\node[state, accepting, right of=23] (123) {$\{1, 2, 3\}$};
-\draw (phi) edge[loop left] node{$a, b$} (phi)
-    (1) edge[above] node{$a$} (phi)
-    (1) edge[above] node{$b$} (2)
-    (2) edge[right] node{$a$} (23)
-    (2) edge[above] node{$b$} (3)
-    (12) edge[above, pos=.3, left=2pt] node{$a, b$} (23)
-    (3) edge[left] node{$b$} (phi)
-    (3) edge[below] node{$a$} (13)
-    (13) edge[loop right] node{$a$} (13)
-    (13) edge[above] node{$b$} (2)
-    (23) edge[bend left, above] node{$a$} (123)
-    (23) edge[bend left, below] node{$b$} (3)
-    (123) edge[loop above] node{$a$} (123)
-    (123) edge[bend left, below] node{$b$} (23);
+        c=r"""\node[state, initial, accepting] (1) {$1$};
+\node[state, below left of=1] (2) {$2$};
+\node[state, right of=2] (3) {$3$};
+\draw   (1) edge[above] node{$b$} (2)
+        (1) edge[below, bend right, left=0.3] node{$\epsilon$} (3)
+        (2) edge[loop left] node{$a$} (2)
+        (2) edge[below] node{$a, b$} (3)
+        (3) edge[above, bend right, right=0.3] node{$a$} (1);
 """
 
         return Tikz(c,"positioning,automata,arrow","").svg()
