@@ -76,4 +76,4 @@ class DFA(object):
 (f) edge [right]   node         {$\varepsilon$} (i);
 """
 
-        return Tikz(c,"positioning,automata","on top/.style={preaction={draw=white,-}},on top/.default=4pt").svg()
+        return tikz.Tikz(c,"positioning,automata","on top/.style={preaction={draw=white,-}},on top/.default=4pt").svg()
