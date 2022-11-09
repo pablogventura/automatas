@@ -23,9 +23,9 @@ class Tikz(object):
     def svg(self):
         subprocess.run(["latex"],capture_output=True,input=self.latex())
         subprocess.run(["dvisvgm", "--zoom=-1", "--exact", "--font-format=woff", "texput.dvi"],capture_output=True)
-        with open("texput-1.svg","r") as f:
+        with open("/content/texput.svg","r") as f:
             svg_code = f.read()
-        subprocess.call(["rm", "texput-1.svg", "texput.aux", "texput.dvi", "texput.log"])
+        subprocess.call(["rm", "/content/texput.svg", "/content/texput.aux", "/content/texput.dvi", "/content/texput.log"])
         return svg_code
 
 
