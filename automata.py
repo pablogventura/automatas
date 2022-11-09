@@ -1,7 +1,7 @@
 import numpy
 import re
 from  IPython.display import Math
-import tikz
+from . import tikz
 
 class Delta(object):
     def __init__(self,tabla):
