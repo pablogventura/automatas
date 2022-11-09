@@ -121,4 +121,4 @@ class DFA(object):
     (123) edge[bend left, below] node{$b$} (23);
 """
 
-        return Tikz(c,"positioning,automata","on top/.style={preaction={draw=white,-}},on top/.default=4pt").svg()
+        return Tikz(c,"positioning,automata","").svg()
