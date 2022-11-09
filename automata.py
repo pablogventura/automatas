@@ -1,7 +1,7 @@
 import numpy
 import re
 from  IPython.display import Math
-
+import tikz
 
 class Delta(object):
     def __init__(self,tabla):
@@ -67,18 +67,13 @@ class DFA(object):
         return self.estado_actual in self.finales
 
     def _repr_svg_(self):
-        return r"""<svg height="100" width="100">
-  <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
-  Sorry, your browser does not support inline SVG.  
-</svg>"""
-
-f="""
-f  a  b
-q0 q1 q1
-q1 q0 q2
-q2 q0 q1
+        c=r"""\node[state,initial]   (q)                {$q$};
+\node[state]  (i) [right=of q] {$i$};
+\node[state,accepting]  (f) [right=of q,below=of i] {$f$};
+\path[->] (q) edge [above]   node         {$0$} (i)
+(q) edge [loop below]   node         {$1$} ()
+(q) edge [below]   node         {$1$} (f)
+(f) edge [right]   node         {$\varepsilon$} (i);
 """
 
-a = DFA(Delta(f),"q0",{"q0","q2"})
-
-    
+        return Tikz(c,"positioning,automata","on top/.style={preaction={draw=white,-}},on top/.default=4pt").svg()
