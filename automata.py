@@ -132,6 +132,10 @@ class DFA(object):
             node_x = (node_x + 1) % 4
             if node_x == 0:
                 node_y += 1
+        c += r"\draw "
+        for q in self.estados:
+            for a in self.alfabeto:
+                c += r"  (" + q + r") edge[above] node{$" + a + r"$} (" + self.delta(q,a) + r")" + "\n"
         return Tikz(c,"","").svg()
 
 
