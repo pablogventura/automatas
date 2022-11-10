@@ -87,7 +87,7 @@ class DFA(object):
         self.finales = set(finales)
         assert inicial in self.estados
         assert finales <= self.estados
-
+        self._generate_tikz()
         self.reset()
 
     def reset(self):
@@ -114,8 +114,7 @@ class DFA(object):
         else:
             return ", below of=" + places[(x,y-1)]
 
-
-    def _repr_svg_(self):
+    def _generate_tikz(self):
         places = dict()
         node_x=0
         node_y=0
@@ -136,7 +135,13 @@ class DFA(object):
         for q in self.estados:
             for a in self.alfabeto:
                 c += r"  (" + q + r") edge[above] node{$" + a + r"$} (" + self.delta(q,a) + r")" + "\n"
-        return Tikz(c,"","").svg()
+        c += ";"
+        self.tikz = Tikz(c,"","")
+
+    def _repr_latex_(self):
+        return self.tikz.latex()
+    def _repr_svg_(self):
+        return self.tikz.svg()
 
 
 #         c=r"""\node[state] (phi) {$\emptyset$};
@@ -174,4 +179,4 @@ if __name__ == "__main__":
 
     a = DFA(d,"q0",{"q2"})
 
-    print(a._repr_svg_().decode())
+    print(a._repr_latex_().decode())
