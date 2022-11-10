@@ -14,6 +14,14 @@ class Tikz(object):
         return (r"""
 \documentclass[convert={convertexe={convert},size=400x240,outext=.png},border=0pt]{standalone}
 \usepackage[]{tikz}
+\usetikzlibrary{automata,positioning,arrows}
+\tikzset{
+->, % makes the edges directed
+%>=stealth’, % makes the arrow heads bold
+node distance=3cm, % specifies the minimum distance between two nodes. Change if necessary.
+every state/.style={thick, fill=gray!10}, % sets the properties for each ’state’ node
+initial text=$ $, % sets the text that appears on the start arrow
+}
 \usetikzlibrary{""" + self.tikzlibraries + r"""}
 
 \begin{document}
@@ -97,14 +105,13 @@ class DFA(object):
         return self.estado_actual in self.finales
 
     def _repr_svg_(self):
-        c=r"""\node[state, initial, accepting] (1) {$1$};
-\node[state, below left of=1] (2) {$2$};
-\node[state, right of=2] (3) {$3$};
-\draw   (1) edge[above] node{$b$} (2)
-        (1) edge[below, bend right, left=0.3] node{$\epsilon$} (3)
-        (2) edge[loop left] node{$a$} (2)
-        (2) edge[below] node{$a, b$} (3)
-        (3) edge[above, bend right, right=0.3] node{$a$} (1);
+        c=r"""\node[state,initial]   (q)                {$q$};
+        \node[state]  (i) [right=of q] {$i$};
+        \node[state,accepting]  (f) [right=of q,below=of i] {$f$};
+        \path[->] (q) edge [above]   node         {$0$} (i)
+        (q) edge [loop below]   node         {$1$} ()
+        (q) edge [below]   node         {$1$} (f)
+        (f) edge [right]   node         {$\varepsilon$} (i);
 """
 
-        return Tikz(c,"positioning,automata,arrow","").svg()
+        return Tikz(c,"","").svg()
