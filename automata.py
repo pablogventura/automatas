@@ -103,14 +103,33 @@ class DFA(object):
         self.reset()
         self.delta_sombrero(palabra)
         return self.estado_actual in self.finales
+    def find_place(self,q,x,y,places):
+        places[(x,y)] = q
+        if x==0 and y==0:
+            return ""
+        elif x==0:
+            return ", below of=" + places[(x,y-1)]
+        elif y==0:
+            return ", right of=" + places[(x-1,y)]
+        else:
+            return ", below of=" + places[(x,y-1)]
+
 
     def _repr_svg_(self):
+        places = dict()
+        node_x=0
+        node_y=0
         c=""
         for q in self.estados:
-            modifiers = ""
+            modifiers = self.find_place(q,node_x,node_y,places)
             if q in self.finales:
                 modifiers+= ", accepting"
+            
             c+=r"\node[state" + modifiers + r"] ("+ q + r") {$"+ self.delta._prettify_name(q) + r"$};" + "\n"
+            
+            node_x = (node_x + 1) % 4
+            if node_x == 0:
+                node_y += 1
         return Tikz(c,"","").svg()
 
 
@@ -138,3 +157,15 @@ class DFA(object):
 #     (123) edge[bend left, below] node{$b$} (23);
 #"""
 
+if __name__ == "__main__":
+    f="""
+    f  a  b
+    q0 q1 q1
+    q1 q0 q2
+    q2 q0 q1
+    """
+    d = Delta(f)
+
+    a = DFA(d,"q0",{"q2"})
+
+    print(a._repr_svg_().decode())
