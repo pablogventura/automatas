@@ -124,6 +124,8 @@ class DFA(object):
             modifiers = self.find_place(q,node_x,node_y,places)
             if q in self.finales:
                 modifiers+= ", accepting"
+            if q == self.finales:
+                modifiers+= ", initial"
             
             c+=r"\node[state" + modifiers + r"] ("+ q + r") {$"+ self.delta._prettify_name(q) + r"$};" + "\n"
             
