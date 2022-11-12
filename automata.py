@@ -2,6 +2,7 @@ import numpy
 import re
 from  IPython.display import Math
 import subprocess
+from math import sqrt
 
 class Tikz(object):
 
@@ -122,16 +123,24 @@ class DFA(object):
         else:
             return ", below of=" + places[(x,y-1)]
     def _arrow(self,q0,q1,places):
+        x_q0,y_q0 = list(places.keys())[list(places.values()).index(q0)]
+        x_q1,y_q1 = list(places.keys())[list(places.values()).index(q1)]
+        distancia = sqrt((x_q1-x_q0)**2+(y_q1-y_q0)**2)
+        if distancia > 1:
+            modificador = " bend"
+        else:
+            modificador = ""
+
         syms = self.delta._get_steps(q0,q1)
         if syms:
-            return {r"  (" + q0 + r") edge[above] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"}
+            return {r"  (" + q0 + r") edge[above" + modificador + r"] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"}
         else:
             return {}
 
     def _arrow_loop(self,q,places):
         syms = self.delta._get_steps(q,q)
         if syms:
-            return {r"  (" + q + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q + r")" + "\n"}
+            return {r"  (" + q + r") edge[loop above] node{$" + ", ".join(syms) + r"$} (" + q + r")" + "\n"}
         else:
             return {}
     def _arrows(self,q0,q1,places):
