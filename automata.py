@@ -123,23 +123,23 @@ class DFA(object):
             return ", below of=" + places[(x,y-1)]
 
     def _arrows(self,q0,q1,places):
-        result = ""
+        result = set()
 
         syms = self.delta._get_steps(q0,q1)
         if syms:
-            result += r"  (" + q0 + r") edge[above] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"
+            result.add(r"  (" + q0 + r") edge[above] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n")
 
         syms = self.delta._get_steps(q0,q0)
         if syms:
-            result += r"  (" + q0 + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"
+            result.add(r"  (" + q0 + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q0 + r")" + "\n")
         
         syms = self.delta._get_steps(q1,q0)
         if syms:
-            result += r"  (" + q1 + r") edge[below] node{$" + ", ".join(syms) + r"$} (" + q0 + r")" + "\n"
+            result.add(r"  (" + q1 + r") edge[below] node{$" + ", ".join(syms) + r"$} (" + q0 + r")" + "\n")
 
         syms = self.delta._get_steps(q1,q1)
         if syms:
-            result += r"  (" + q0 + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"
+            result.add(r"  (" + q1 + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n")
 
         return result
 
@@ -161,11 +161,13 @@ class DFA(object):
             if node_x == 0:
                 node_y += 1
         c += r"\draw "
+        arrows = set()
         for q0 in self.estados:
             for q1 in self.estados:
                 if not q0 < q1:
                     continue
-                c += self._arrows(q0,q1,places)
+                arrows = arrows.union(self._arrows(q0,q1,places))
+        c += "".join(arrows)
         c += ";"
         self.tikz = Tikz(c,"","")
 
@@ -206,7 +208,22 @@ if __name__ == "__main__":
     q1 q0 q2
     q2 q0 q1
     """
+    f="""
+    f  a  b
+    q0 q1 q1
+    q1 q0 q2
+    q2 q0 q1
+    q3 q3 q1
+    q4 q0 q3
+    q5 q1 q1
+    q6 q0 q2
+    q7 q0 q1
+    q8 q8 q8
+    q9 q0 q3
+    """
     d = Delta(f)
+
+
 
     a = DFA(d,"q0",{"q2"})
 
