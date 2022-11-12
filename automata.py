@@ -127,7 +127,7 @@ class DFA(object):
         x_q1,y_q1 = list(places.keys())[list(places.values()).index(q1)]
         distancia = sqrt((x_q1-x_q0)**2+(y_q1-y_q0)**2)
         if distancia > 1:
-            modificador = " bend"
+            modificador = ", bend"
         else:
             modificador = ""
 
@@ -140,7 +140,7 @@ class DFA(object):
     def _arrow_loop(self,q,places):
         syms = self.delta._get_steps(q,q)
         if syms:
-            return {r"  (" + q + r") edge[loop above] node{$" + ", ".join(syms) + r"$} (" + q + r")" + "\n"}
+            return {r"  (" + q + r") edge[loop, above] node{$" + ", ".join(syms) + r"$} (" + q + r")" + "\n"}
         else:
             return {}
     def _arrows(self,q0,q1,places):
