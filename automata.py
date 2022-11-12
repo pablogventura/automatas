@@ -51,6 +51,14 @@ class Delta(object):
     
     def __call__(self, estado, simbolo):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
+    
+    def _get_steps(self,q0,q1):
+        result = set()
+        for a in self.alfabeto:
+            v = self(q0,a)
+            if v == q1:
+                result.add(a)
+        return result
 
     def _prettify_name(self, text):
         match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
@@ -114,6 +122,27 @@ class DFA(object):
         else:
             return ", below of=" + places[(x,y-1)]
 
+    def _arrows(self,q0,q1,places):
+        result = ""
+
+        syms = self.delta._get_steps(q0,q1)
+        if syms:
+            result += r"  (" + q0 + r") edge[above] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"
+
+        syms = self.delta._get_steps(q0,q0)
+        if syms:
+            result += r"  (" + q0 + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"
+        
+        syms = self.delta._get_steps(q1,q0)
+        if syms:
+            result += r"  (" + q1 + r") edge[below] node{$" + ", ".join(syms) + r"$} (" + q0 + r")" + "\n"
+
+        syms = self.delta._get_steps(q1,q1)
+        if syms:
+            result += r"  (" + q0 + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"
+
+        return result
+
     def _generate_tikz(self):
         places = dict()
         node_x=0
@@ -132,9 +161,11 @@ class DFA(object):
             if node_x == 0:
                 node_y += 1
         c += r"\draw "
-        for q in self.estados:
-            for a in self.alfabeto:
-                c += r"  (" + q + r") edge[above] node{$" + a + r"$} (" + self.delta(q,a) + r")" + "\n"
+        for q0 in self.estados:
+            for q1 in self.estados:
+                if not q0 < q1:
+                    continue
+                c += self._arrows(q0,q1,places)
         c += ";"
         self.tikz = Tikz(c,"","")
 
