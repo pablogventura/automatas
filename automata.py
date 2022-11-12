@@ -127,7 +127,7 @@ class DFA(object):
         x_q1,y_q1 = list(places.keys())[list(places.values()).index(q1)]
         distancia = sqrt((x_q1-x_q0)**2+(y_q1-y_q0)**2)
         if distancia > 1:
-            modificador = ", bend left, left=" +  str(round(distancia,2))
+            modificador = ", bend left, left=" +  str(round(distancia**2,2))
         else:
             modificador = ""
 
