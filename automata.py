@@ -121,26 +121,26 @@ class DFA(object):
             return ", right of=" + places[(x-1,y)]
         else:
             return ", below of=" + places[(x,y-1)]
+    def _arrow(self,q0,q1,places):
+        syms = self.delta._get_steps(q0,q1)
+        if syms:
+            return {r"  (" + q0 + r") edge[above] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n"}
+        else:
+            return {}
 
+    def _arrow_loop(self,q,places):
+        syms = self.delta._get_steps(q,q)
+        if syms:
+            return {r"  (" + q + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q + r")" + "\n"}
+        else:
+            return {}
     def _arrows(self,q0,q1,places):
         result = set()
 
-        syms = self.delta._get_steps(q0,q1)
-        if syms:
-            result.add(r"  (" + q0 + r") edge[above] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n")
-
-        syms = self.delta._get_steps(q0,q0)
-        if syms:
-            result.add(r"  (" + q0 + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q0 + r")" + "\n")
-        
-        syms = self.delta._get_steps(q1,q0)
-        if syms:
-            result.add(r"  (" + q1 + r") edge[below] node{$" + ", ".join(syms) + r"$} (" + q0 + r")" + "\n")
-
-        syms = self.delta._get_steps(q1,q1)
-        if syms:
-            result.add(r"  (" + q1 + r") edge[loop] node{$" + ", ".join(syms) + r"$} (" + q1 + r")" + "\n")
-
+        result = result.union(self._arrow(q0,q1,places))
+        result = result.union(self._arrow(q1,q0,places))
+        result = result.union(self._arrow_loop(q0,places))
+        result = result.union(self._arrow_loop(q1,places))
         return result
 
     def _generate_tikz(self):
