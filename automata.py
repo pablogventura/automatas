@@ -8,16 +8,53 @@ class Delta(object):
         self.matriz=numpy.genfromtxt(self.tabla.splitlines(),dtype=str)
         self.estados = list(self.matriz[1:,0])
         self.alfabeto = list(self.matriz[0,1:])
+        
+        if "{" in self.tabla or "}" in self.tabla:
+            self.is_dfa=False
+            assert self.tabla.count("{") == len(self.estados) * len(self.alfabeto), "Tiene que haber un { por par (estado,simbolo)"
+            assert self.tabla.count("}") == len(self.estados) * len(self.alfabeto), "Tiene que haber un } por par (estado,simbolo)"
+            self.matriz = self.set_parsing()
+        else:
+            self.is_dfa=True
 
+
+    def set_parsing(self):
+        print(self.matriz)
+        matriz = self.matriz.copy()
+        matriz = matriz.astype(object)
+        for i in range(1,matriz.shape[0]):
+            for j in range(1,matriz.shape[1]):
+                matriz[i,j] = set(s.strip() for s in self.matriz[i,j][1:-1].split(",") if s)
+        return matriz
     
+    def _epsilon_clausure(self, estados):
+        nuevos_estados = set()
+        while estados != nuevos_estados:
+            nuevos_estados = estados.union(self(estados,"epsilon"))
+            estados = nuevos_estados
+        return estados
+
     def __call__(self, estado, simbolo):
-        return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
+        if self.is_dfa or type(estado) != set:
+            return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
+        else:
+            assert not self.is_dfa
+            result = set()
+            for e in estado:
+                result = result.union(self.matriz[self.estados.index(e)+1,self.alfabeto.index(simbolo)+1])
+            print(result)
+            if "epsilon" in self.alfabeto:
+                result = self._epsilon_clausure(result)
+
+        return result
 
     def _latex_name(self, text):
         match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
         if match:
             text,number = match.groups()
             return f"{text}_{{{number}}}"
+        else:
+            return text
 
     def _unicode_name(self, text):
         match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
@@ -33,7 +70,10 @@ class Delta(object):
         for q in self.estados:
             result += self._latex_name(q)
             for a in self.alfabeto:
-                result += " & " + self._latex_name(self(q,a))
+                if self.is_dfa:
+                    result += " & " + self._latex_name(self(q,a))
+                else:
+                    result += " & " + "\{" + ",".join([self._latex_name(s) for s in self(q,a)]) + "\}"
             result += r"\\" + "\n"
         result += r"\end{array}"
         return result
@@ -92,6 +132,62 @@ class DFA(object):
     def view(self):
         return self.graph.view()
 
+class NFA(object):
+    """
+    Clase para definir un automata finito no determinista
+    """
+    def __init__(self, delta, inicial, finales):
+        self.estados = set(delta.estados)
+        self.alfabeto = set(delta.alfabeto)
+        self.delta = delta
+        self.inicial = inicial
+        self.finales = set(finales)
+        self.estados_actual = None
+        assert inicial in self.estados
+        assert finales <= self.estados
+        self._generate_graph()
+        self.reset()
+
+    def reset(self):
+        self.estados_actual = {self.inicial}
+
+    def delta_sombrero(self, palabra):
+        for a in palabra:
+            assert a in self.alfabeto
+            print((self.estados_actual,a))
+            self.estados_actual = self.delta(self.estados_actual,a)
+            assert self.estados_actual <= self.estados, self.estados_actual
+    
+    def en_lenguaje(self, palabra):
+        self.reset()
+        self.delta_sombrero(palabra)
+        print(self.estados_actual)
+        return any(e in self.finales for e in self.estados_actual)
+
+    def _generate_graph(self):
+        graph = graphviz.Digraph(comment='NFA')
+        graph.graph_attr['rankdir'] = 'LR'
+        graph.node("fake",style="invisible",root="true")
+        for q in self.estados:
+            if q in self.finales:
+                graph.node(q,label=self.delta._unicode_name(q),shape="doublecircle")
+            else:
+                graph.node(q,label=self.delta._unicode_name(q),shape="circle")
+        graph.edge("fake",self.inicial,style="bold")
+        for q in self.estados:
+            for a in self.alfabeto:
+                for q1 in self.delta(q,a):
+                    print(q1)
+                    graph.edge(q, q1, label=a)
+        self.graph = graph
+
+    #def _repr_latex_(self):
+    #    return self.graph.source
+    def _repr_svg_(self):
+        return self.graph._repr_svg_()
+    
+    def view(self):
+        return self.graph.view()
 
 if __name__ == "__main__":
     f="""
@@ -100,23 +196,21 @@ if __name__ == "__main__":
     q1 q0 q2
     q2 q0 q1
     """
-    f="""
-    f  a  b
-    q0 q1 q1
-    q1 q0 q2
-    q2 q0 q1
-    q3 q3 q1
-    q4 q0 q3
-    q5 q1 q1
-    q6 q0 q2
-    q7 q0 q1
-    q8 q8 q8
-    q9 q0 q3
-    """
     d = Delta(f)
 
+    #a = DFA(d,"q0",{"q2"})
 
-
-    a = DFA(d,"q0",{"q2"})
+    #a.view()
+    f = r"""
+    f a b c epsilon
+    q0 {} {q3} {q1} {}
+    q1 {q1,q2} {q3} {} {q0,q2,q3}
+    q2 {} {q0,q1,q3} {} {}
+    q3 {} {} {} {q0}
+    """
+    d = Delta(f)
+    print(d._repr_latex_())
+    a = NFA(d,"q0",{"q1"})
 
     a.view()
+    print(a.graph.source)
