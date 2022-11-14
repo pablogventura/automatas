@@ -97,8 +97,8 @@ class DFA(object):
                 graph.edge(q, self.delta(q,a), label=a)
         self.graph = graph
 
-    def _repr_latex_(self):
-        return self.graph.source
+    #def _repr_latex_(self):
+    #    return self.graph.source
     def _repr_svg_(self):
         return self.graph._repr_svg_()
 
