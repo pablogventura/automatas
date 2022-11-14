@@ -68,16 +68,7 @@ class DFA(object):
         self.reset()
         self.delta_sombrero(palabra)
         return self.estado_actual in self.finales
-    def find_place(self,q,x,y,places):
-        places[(x,y)] = q
-        if x==0 and y==0:
-            return ""
-        elif x==0:
-            return ", below of=" + places[(x,y-1)]
-        elif y==0:
-            return ", right of=" + places[(x-1,y)]
-        else:
-            return ", below of=" + places[(x,y-1)]
+
     def _generate_graph(self):
         graph = graphviz.Digraph(comment='DFA')
         graph.graph_attr['rankdir'] = 'LR'
