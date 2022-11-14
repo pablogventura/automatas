@@ -12,14 +12,6 @@ class Delta(object):
     
     def __call__(self, estado, simbolo):
         return self.matriz[self.estados.index(estado)+1,self.alfabeto.index(simbolo)+1]
-    
-    def _get_steps(self,q0,q1):
-        result = set()
-        for a in self.alfabeto:
-            v = self(q0,a)
-            if v == q1:
-                result.add(a)
-        return result
 
     def _latex_name(self, text):
         match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
@@ -45,9 +37,6 @@ class Delta(object):
             result += r"\\" + "\n"
         result += r"\end{array}"
         return result
-#d & d & g\\\hline
-#a & a & n
-#\end{array}"""
 
         
 
