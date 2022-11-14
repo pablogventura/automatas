@@ -1,6 +1,35 @@
 import numpy
 import re
 import graphviz
+from itertools import chain, combinations
+
+def powerset(iterable):
+    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    s = list(iterable)
+    return map(set,chain.from_iterable(combinations(s, r) for r in range(len(s)+1)))
+
+def to_unicode(text):
+    match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
+    if match:
+        text,number = match.groups()
+        for i,s in enumerate(["₀","₁","₂","₃","₄","₅","₆","₇","₈","₉"]):
+            number = number.replace(str(i),s)
+        return text + number
+    elif text == "epsilon":
+        return "ε"
+    else:
+        return text
+
+def set_to_text(s):
+    s = list(sorted(s))
+    return "[" + ",".join(s) + "]"
+
+def tex_to_set(text):
+    result = text.replace(",",'","')
+    result = result.replace("[",'{"')
+    result = result.replace("]",'"}')
+    return eval(result) - {""}
+
 
 class Delta(object):
     def __init__(self,tabla):
@@ -16,7 +45,6 @@ class Delta(object):
             self.matriz = self.set_parsing()
         else:
             self.is_dfa=True
-
 
     def set_parsing(self):
         print(self.matriz)
@@ -56,14 +84,6 @@ class Delta(object):
         else:
             return text
 
-    def _unicode_name(self, text):
-        match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
-        if match:
-            text,number = match.groups()
-            for i,s in enumerate(["₀","₁","₂","₃","₄","₅","₆","₇","₈","₉"]):
-                number = number.replace(str(i),s)
-            return text + number
-
     def _repr_latex_(self):
         result = r"\begin{array}{c|"+ "c" * len(self.alfabeto) + "}\n"
         result += f"\delta_{{{self.matriz[0,0]}}} & " + " & ".join(self.alfabeto) + r"\\\hline" + "\n"
@@ -84,9 +104,15 @@ class DFA(object):
     """
     Clase para definir un automata finito determinista
     """
-    def __init__(self, delta, inicial, finales):
-        self.estados = set(delta.estados)
-        self.alfabeto = set(delta.alfabeto)
+    def __init__(self, delta, inicial, finales, estados=None, alfabeto=None):
+        if not estados:
+            self.estados = set(delta.estados)
+        else:
+            self.estados = estados
+        if not alfabeto:
+            self.alfabeto = set(delta.alfabeto)
+        else:
+            self.alfabeto = alfabeto
         self.delta = delta
         self.inicial = inicial
         self.finales = set(finales)
@@ -115,9 +141,9 @@ class DFA(object):
         graph.node("fake",style="invisible",root="true")
         for q in self.estados:
             if q in self.finales:
-                graph.node(q,label=self.delta._unicode_name(q),shape="doublecircle")
+                graph.node(q,label=to_unicode(q),shape="doublecircle")
             else:
-                graph.node(q,label=self.delta._unicode_name(q),shape="circle")
+                graph.node(q,label=to_unicode(q),shape="circle")
         graph.edge("fake",self.inicial,style="bold")
         for q in self.estados:
             for a in self.alfabeto:
@@ -170,16 +196,36 @@ class NFA(object):
         graph.node("fake",style="invisible",root="true")
         for q in self.estados:
             if q in self.finales:
-                graph.node(q,label=self.delta._unicode_name(q),shape="doublecircle")
+                graph.node(q,label=to_unicode(q),shape="doublecircle")
             else:
-                graph.node(q,label=self.delta._unicode_name(q),shape="circle")
+                graph.node(q,label=to_unicode(q),shape="circle")
         graph.edge("fake",self.inicial,style="bold")
         for q in self.estados:
             for a in self.alfabeto:
                 for q1 in self.delta(q,a):
                     print(q1)
-                    graph.edge(q, q1, label=a)
+                    graph.edge(q, q1, label=to_unicode(a))
         self.graph = graph
+
+    def determinization(self):
+        estados = []
+        finales = []
+        for p in powerset(self.estados):
+            clausura = self.delta._epsilon_clausure(set(p))
+            if clausura not in estados:
+                estados.append(clausura)
+        for estado in estados:
+            if estado.intersection(self.finales) != set():
+                finales.append(estado)
+        inicial = set_to_text(self.delta._epsilon_clausure({self.inicial}))
+        finales = {set_to_text(f) for f in finales}
+        estados = {set_to_text(e) for e in estados}
+        def delta_dfa(d,s):
+            d=tex_to_set(d)
+            return set_to_text(self.delta(d,s))
+        
+        return DFA(delta_dfa,inicial,finales,estados,self.alfabeto-{"epsilon"})
+        
 
     #def _repr_latex_(self):
     #    return self.graph.source
