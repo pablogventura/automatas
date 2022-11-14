@@ -259,4 +259,3 @@ if __name__ == "__main__":
     a = NFA(d,"q0",{"q1"})
 
     a.view()
-    print(a.graph.source)
