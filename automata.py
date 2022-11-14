@@ -21,20 +21,27 @@ class Delta(object):
                 result.add(a)
         return result
 
-    def _prettify_name(self, text):
+    def _latex_name(self, text):
         match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
         if match:
             text,number = match.groups()
             return f"{text}_{{{number}}}"
 
+    def _unicode_name(self, text):
+        match = re.match(r"([a-z]+)([0-9]+)", text, re.I)
+        if match:
+            text,number = match.groups()
+            for i,s in enumerate(["₀","₁","₂","₃","₄","₅","₆","₇","₈","₉"]):
+                number = number.replace(str(i),s)
+            return text + number
 
     def _repr_latex_(self):
         result = r"\begin{array}{c|"+ "c" * len(self.alfabeto) + "}\n"
         result += f"\delta_{{{self.matriz[0,0]}}} & " + " & ".join(self.alfabeto) + r"\\\hline" + "\n"
         for q in self.estados:
-            result += self._prettify_name(q)
+            result += self._latex_name(q)
             for a in self.alfabeto:
-                result += " & " + self._prettify_name(self(q,a))
+                result += " & " + self._latex_name(self(q,a))
             result += r"\\" + "\n"
         result += r"\end{array}"
         return result
@@ -56,7 +63,7 @@ class DFA(object):
         self.finales = set(finales)
         assert inicial in self.estados
         assert finales <= self.estados
-        self._generate_tikz()
+        self._generate_graph()
         self.reset()
 
     def reset(self):
@@ -82,15 +89,15 @@ class DFA(object):
             return ", right of=" + places[(x-1,y)]
         else:
             return ", below of=" + places[(x,y-1)]
-    def _generate_tikz(self):
+    def _generate_graph(self):
         graph = graphviz.Digraph(comment='DFA')
         graph.graph_attr['rankdir'] = 'LR'
         graph.node("fake",style="invisible",root="true")
         for q in self.estados:
             if q in self.finales:
-                graph.node(q,label=self.delta._prettify_name(q),shape="doublecircle")
+                graph.node(q,label=self.delta._unicode_name(q),shape="doublecircle")
             else:
-                graph.node(q,label=self.delta._prettify_name(q),shape="circle")
+                graph.node(q,label=self.delta._unicode_name(q),shape="circle")
         graph.edge("fake",self.inicial,style="bold")
         for q in self.estados:
             for a in self.alfabeto:
@@ -101,6 +108,9 @@ class DFA(object):
     #    return self.graph.source
     def _repr_svg_(self):
         return self.graph._repr_svg_()
+    
+    def view(self):
+        return self.graph.view()
 
 
 if __name__ == "__main__":
@@ -129,4 +139,4 @@ if __name__ == "__main__":
 
     a = DFA(d,"q0",{"q2"})
 
-    print(a._repr_latex_())
+    a.view()
