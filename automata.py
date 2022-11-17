@@ -235,6 +235,93 @@ class NFA(object):
     def view(self):
         return self.graph.view()
 
+
+class Regex(object):
+    pass
+
+class Vacio(Regex):
+    def en_lenguaje(self,v):
+        return False
+    def __repr__(self) -> str:
+        return "∅"
+
+class Epsilon(Regex):
+    def en_lenguaje(self,v):
+        return not v
+    def __repr__(self) -> str:
+        return "ε"
+
+class Symbol(Regex):
+    def __init__(self, s):
+        super().__init__()
+        self.symbol = s
+    def __repr__(self) -> str:
+        return self.symbol
+
+    def en_lenguaje(self, v):
+        return v==self.symbol
+    
+class Union(Regex):
+    def __init__(self,re1,re2) -> None:
+        super().__init__()
+        self.re1 = re1
+        self.re2 = re2
+    def en_lenguaje(self,v):
+        return self.re1.en_lenguaje(v) or self.re2.en_lenguaje(v)
+    def __repr__(self) -> str:
+        return f"({self.re1} + {self.re2})"
+
+class Concatenacion(Regex):
+    def __init__(self,re1,re2) -> None:
+        super().__init__()
+        self.re1 = re1
+        self.re2 = re2
+    def en_lenguaje(self,v):
+        for i in range(len(v)):
+            a,b = v[:i],v[i:]
+            if self.re1.en_lenguaje(a) and self.re2.en_lenguaje(b):
+                return True
+        return False
+    def __repr__(self) -> str:
+        return f"{self.re1}{self.re2}"
+
+class Clausura(Regex):
+    def __init__(self,re) -> None:
+        super().__init__()
+        self.re = re
+    def divide_palabra(self,v,t):
+        chunks = list({v[x:x+t] for x in range(0, len(v), t)})
+        if len(chunks) <= 1:
+            return chunks[0]
+        else:
+            return None
+
+    def en_lenguaje(self,v):
+        if not v:
+            return True
+        for i in range(1,len(v)+1):
+            subpalabra = self.divide_palabra(v,i)
+            if subpalabra is not None and self.re.en_lenguaje(subpalabra):
+                return True
+        return False
+    def __repr__(self) -> str:
+        return f"{self.re}*"
+
+
+
+def regex(v):
+    parser = []
+    profundidad = []
+    while v:
+        a,v = v[0],v[1:]
+        if a == "(":
+            profundidad.append(temp)
+        elif a == ")":
+            profundidad.append([])
+        else:
+            profundidad[-1].append(a)
+    return parser
+
 if __name__ == "__main__":
     f="""
     f  a  b
@@ -242,7 +329,7 @@ if __name__ == "__main__":
     q1 q0 q2
     q2 q0 q1
     """
-    d = Delta(f)
+    #d = Delta(f)
 
     #a = DFA(d,"q0",{"q2"})
 
@@ -254,8 +341,18 @@ if __name__ == "__main__":
     q2 {} {q0,q1,q3} {} {}
     q3 {} {} {} {q0}
     """
-    d = Delta(f)
-    print(d._repr_latex_())
-    a = NFA(d,"q0",{"q1"})
+    #d = Delta(f)
+    #print(d._repr_latex_())
+    #a = NFA(d,"q0",{"q1"})
 
-    a.view()
+    #a.view()
+
+    r = ""
+    for s in "(a(b+c))*":
+        if s == "(":
+            r += "["
+        elif s == ")":
+            r += "]"
+        else:
+            r += f"'{s},'"
+    print(eval(r))
