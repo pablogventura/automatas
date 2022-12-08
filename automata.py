@@ -151,7 +151,7 @@ class DFA(object):
             for a in self.alfabeto:
                 flechas[(q,self.delta(q,a))].append(to_unicode(a))
         for q0,q1 in flechas.keys():
-            graph.edge(q0, q1, label=", ".join(flechas[(q0,q1)]))
+            graph.edge(q0, q1, label=", ".join(sorted(flechas[(q0,q1)])))
         self.graph = graph
 
     #def _repr_latex_(self):
@@ -210,7 +210,7 @@ class NFA(object):
                 for q1 in self.delta(q,a):
                     flechas[(q,q1)].append(to_unicode(a))
         for q0,q1 in flechas.keys():
-            graph.edge(q0, q1, label=", ".join(flechas[(q0,q1)]))
+            graph.edge(q0, q1, label=", ".join(sorted(flechas[(q0,q1)])))
         self.graph = graph
 
     def determinization(self):
@@ -375,4 +375,4 @@ if __name__ == "__main__":
     print(d._repr_latex_())
     a = NFA(d,"q0",{"q1"})
 
-    #a.view()
+    a.view()
