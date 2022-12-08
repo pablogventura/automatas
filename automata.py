@@ -2,6 +2,7 @@ import numpy
 import re
 import graphviz
 from itertools import chain, combinations
+from collections import defaultdict
 
 def powerset(iterable):
     "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
@@ -145,9 +146,12 @@ class DFA(object):
             else:
                 graph.node(q,label=to_unicode(q),shape="circle")
         graph.edge("fake",self.inicial,style="bold")
+        flechas = defaultdict(list)
         for q in self.estados:
             for a in self.alfabeto:
-                graph.edge(q, self.delta(q,a), label=a)
+                flechas[(q,self.delta(q,a))].append(to_unicode(a))
+        for q0,q1 in flechas.keys():
+            graph.edge(q0, q1, label=", ".join(flechas[(q0,q1)]))
         self.graph = graph
 
     #def _repr_latex_(self):
@@ -200,11 +204,13 @@ class NFA(object):
             else:
                 graph.node(q,label=to_unicode(q),shape="circle")
         graph.edge("fake",self.inicial,style="bold")
+        flechas = defaultdict(list)
         for q in self.estados:
             for a in self.alfabeto:
                 for q1 in self.delta(q,a):
-                    print(q1)
-                    graph.edge(q, q1, label=to_unicode(a))
+                    flechas[(q,q1)].append(to_unicode(a))
+        for q0,q1 in flechas.keys():
+            graph.edge(q0, q1, label=", ".join(flechas[(q0,q1)]))
         self.graph = graph
 
     def determinization(self):
@@ -307,7 +313,28 @@ class Clausura(Regex):
     def __repr__(self) -> str:
         return f"{self.re}*"
 
+def l(n,m,R,a):
+    """
+    Lnm (R) := de qn a qm (sólo estados en R).
+    """
+    if n == m:
+        return Clausura(i(n,R,a))
+    else:
+        return Concatenacion(Clausura(i(n,R,a)),f(n,m,R,a))
 
+def i(n, R, a):
+    """
+    In (R) := de qn a sí mismo sin repetirlo (sólo estados en R).
+    """
+    for t in R:
+        for s in R:
+            return Concatenacion(Concatenacion(Symbol(a),l(t,s,R-{n},a)),Symbol(b))
+
+def f(n,m,R,a):
+    """
+    Fnm (R) := de qn a qm sin repetir qn (sólo estados en R).
+    """
+    pass
 
 def regex(v):
     parser = []
@@ -322,6 +349,8 @@ def regex(v):
             profundidad[-1].append(a)
     return parser
 
+
+
 if __name__ == "__main__":
     f="""
     f  a  b
@@ -329,11 +358,12 @@ if __name__ == "__main__":
     q1 q0 q2
     q2 q0 q1
     """
-    #d = Delta(f)
+    d = Delta(f)
 
-    #a = DFA(d,"q0",{"q2"})
+    a = DFA(d,"q0",{"q2"})
 
-    #a.view()
+    a.view()
+
     f = r"""
     f a b c epsilon
     q0 {} {q3} {q1} {}
@@ -341,18 +371,8 @@ if __name__ == "__main__":
     q2 {} {q0,q1,q3} {} {}
     q3 {} {} {} {q0}
     """
-    #d = Delta(f)
-    #print(d._repr_latex_())
-    #a = NFA(d,"q0",{"q1"})
+    d = Delta(f)
+    print(d._repr_latex_())
+    a = NFA(d,"q0",{"q1"})
 
     #a.view()
-
-    r = ""
-    for s in "(a(b+c))*":
-        if s == "(":
-            r += "["
-        elif s == ")":
-            r += "]"
-        else:
-            r += f"'{s},'"
-    print(eval(r))
